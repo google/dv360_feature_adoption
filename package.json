@@ -1,0 +1,32 @@
+{
+  "name": "dv360_feature_adoption",
+  "version": "1.0.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "author": "Google Inc.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/google/dv360_feature_adoption.git"
+  },
+  "scripts": {
+    "start": "npx functions-framework --target=DisplayVideo360FeatureAdoption",
+    "format": "prettier-eslint --write *.js",
+    "test": "echo 'Error: No tests defined' && exit 1"
+  },
+  "dependencies": {
+    "@google-cloud/bigquery": "^5.8.0",
+    "fast-csv": "^4.3.6",
+    "google-auth-library": "^7.8.0",
+    "googleapis": "^85.0.0",
+    "unzipper": "^0.10.11"
+  },
+  "devDependencies": {
+    "@google-cloud/functions-framework": "^1.9.0",
+    "eslint": "^7.32.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-config-prettier": "^8.3.0",
+    "prettier": "^2.3.2",
+    "prettier-eslint": "^13.0.0",
+    "prettier-eslint-cli": "^5.0.1"
+  }
+}
