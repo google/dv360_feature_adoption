@@ -1,13 +1,12 @@
 {
-  "extends": ["google", "prettier"],
+  "extends": [
+    "google"
+  ],
   "parserOptions": {
-    "ecmaVersion": 2021,
+    "ecmaVersion": 2022,
     "sourceType": "module"
   },
-  "env": {
-    "es6": true,
-    "node": true,
-    "browser": true,
-    "es2021": true
+  "rules": {
+    "max-len": 0
   }
 }

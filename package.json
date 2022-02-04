@@ -1,32 +1,31 @@
 {
   "name": "dv360_feature_adoption",
   "version": "1.0.0",
-  "private": true,
   "license": "Apache-2.0",
   "author": "Google Inc.",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "https://github.com/google/dv360_feature_adoption.git"
   },
   "scripts": {
-    "start": "npx functions-framework --target=DisplayVideo360FeatureAdoption",
-    "format": "prettier-eslint --write *.js",
-    "test": "echo 'Error: No tests defined' && exit 1"
+    "run-sdf": "npx functions-framework --target=DisplayVideo360FeatureAdoptionSdf --port=8080",
+    "run-report": "npx functions-framework --target=DisplayVideo360FeatureAdoptionReport --port=8081",
+    "test": "echo 'Error: No tests defined' && exit 1",
+    "lint": "npx eslint ."
   },
   "dependencies": {
-    "@google-cloud/bigquery": "^5.8.0",
+    "@google-cloud/bigquery": "^5.10.0",
+    "google-auth-library": "^7.11.0",
+    "googleapis": "^92.0.0",
+    "unzipper": "^0.10.11",
     "fast-csv": "^4.3.6",
-    "google-auth-library": "^7.8.0",
-    "googleapis": "^85.0.0",
-    "unzipper": "^0.10.11"
+    "got": "12.0.1"
   },
   "devDependencies": {
-    "@google-cloud/functions-framework": "^1.9.0",
-    "eslint": "^7.32.0",
-    "eslint-config-google": "^0.14.0",
-    "eslint-config-prettier": "^8.3.0",
-    "prettier": "^2.3.2",
-    "prettier-eslint": "^13.0.0",
-    "prettier-eslint-cli": "^5.0.1"
+    "@google-cloud/functions-framework": "^2.1.0",
+    "express": "^4.17.2",
+    "eslint": "^8.7.0",
+    "eslint-config-google": "^0.14.0"
   }
 }

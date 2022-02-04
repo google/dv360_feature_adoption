@@ -2,7 +2,6 @@
 .gcloudignore
 .git
 .gitignore
-.prettierrc.json
 .tool-versions
 CONTRIBUTING.md
 LICENSE

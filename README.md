@@ -6,7 +6,7 @@
 
 This is a reference implementation for a solution that will pull the necessary SDF and reports needed from Display & Video 360 into BigQuery to create a feature adoption dataset.
 
-The idea is to deploy a single Cloud Function and schedule jobs for individual Display & Video 360 advertisers to generate a feature adoption dataset every 24 hours for analysis.
+The idea is to deploy a set of Cloud Functions and schedule jobs for individual Display & Video 360 advertisers to generate a feature adoption dataset every 24 hours for analysis.
 
 ## Prerequisites
 
@@ -26,7 +26,7 @@ The idea is to deploy a single Cloud Function and schedule jobs for individual D
 
 3.  Install the dependencies:
 
-        npm install
+        yarn
 
 4.  Create a Google Cloud project (skip if using an existing project):
 
@@ -43,17 +43,18 @@ The idea is to deploy a single Cloud Function and schedule jobs for individual D
 
     _You may need to grant this new service account the BigQuery Admin role in the Cloud console._
 
-7.  Add the roles needed to run the functions:
+7.  Create a Display & Video 360 User Profile using the service account's email address in the [UI](https://displayvideo.google.com) and give the user access to the Advertiser IDs you plan on scheduling jobs for.
 
-        gcloud functions add-iam-policy-binding DisplayVideo360FeatureAdoption --region=us-central1 --member=allUsers --role=roles/cloudscheduler.jobRunner
-        gcloud functions add-iam-policy-binding DisplayVideo360FeatureAdoption --region=us-central1 --member=allUsers --role=roles/cloudfunctions.invoker
-        gcloud functions add-iam-policy-binding DisplayVideo360FeatureAdoption --region=us-central1 --member=allUsers --role=roles/bigquery.admin
+8.  Deploy the provided Cloud Functions to your Google Cloud project:
 
-8.  Create a Display & Video 360 User Profile using the service account's email address in the [UI](https://displayvideo.google.com) and give the user access to the Advertiser IDs you plan on scheduling jobs for.
+        gcloud functions deploy DisplayVideo360FeatureAdoptionSdf \
+            --runtime nodejs14 \
+            --memory 1GB \
+            --timeout 540s \
+            --trigger-http \
+            --service-account "[SERVICE_ACCOUNT_EMAIL]"
 
-9.  Deploy the provided Cloud Function to your Google Cloud project:
-
-        gcloud functions deploy DisplayVideo360FeatureAdoption \
+        gcloud functions deploy DisplayVideo360FeatureAdoptionReport \
             --runtime nodejs14 \
             --memory 1GB \
             --timeout 540s \
@@ -62,9 +63,19 @@ The idea is to deploy a single Cloud Function and schedule jobs for individual D
 
     _Replace `[SERVICE_ACCOUNT_EMAIL]` with the email generated while creating the Service Account._
 
+9.  Add the roles needed to run the functions:
+
+        gcloud functions add-iam-policy-binding DisplayVideo360FeatureAdoptionSdf --region=us-central1 --member=allUsers --role=roles/cloudscheduler.jobRunner
+        gcloud functions add-iam-policy-binding DisplayVideo360FeatureAdoptionSdf --region=us-central1 --member=allUsers --role=roles/cloudfunctions.invoker
+        gcloud functions add-iam-policy-binding DisplayVideo360FeatureAdoptionSdf --region=us-central1 --member=allUsers --role=roles/bigquery.admin
+
+        gcloud functions add-iam-policy-binding DisplayVideo360FeatureAdoptionReport --region=us-central1 --member=allUsers --role=roles/cloudscheduler.jobRunner
+        gcloud functions add-iam-policy-binding DisplayVideo360FeatureAdoptionReport --region=us-central1 --member=allUsers --role=roles/cloudfunctions.invoker
+        gcloud functions add-iam-policy-binding DisplayVideo360FeatureAdoptionReport --region=us-central1 --member=allUsers --role=roles/bigquery.admin
+
 ## Scheduling
 
-1.  Create a **Scheduler Job** with:
+1.  Create a **Scheduler Job** for both Cloud Functions with:
 
         gcloud scheduler jobs create http dv360-feature-adoption-job-[ADVERTISER_ID] \
             --schedule "0 0 * * *" \
@@ -72,17 +83,22 @@ The idea is to deploy a single Cloud Function and schedule jobs for individual D
             --http-method POST \
             --message-body='{ "advertiserId": [ADVERTISER_ID] }'
 
-    _Replace `[CLOUD_FUNCTION_URI]` with the deployed URI for the Cloud Function and replace all instances of `[ADVERTISER_ID]` with the Display & Video 360 Advertiser ID._
+    _Replace `[CLOUD_FUNCTION_URI]` with the deployed URI for the Cloud Functions and replace all instances of `[ADVERTISER_ID]` with the Display & Video 360 Advertiser ID._
 
 ## Testing
 
 1.  Run the function locally:
 
-        npm start
+        yarn run-report
+        yarn run-sdf
 
-2.  Call the function:
+2.  Call the functions:
 
         curl -X "POST" "http://localhost:8080" \
+            -H 'Content-Type: application/json; charset=utf-8' \
+            -d $'{ "advertiserId": [ADVERTISER_ID] }'
+
+        curl -X "POST" "http://localhost:8081" \
             -H 'Content-Type: application/json; charset=utf-8' \
             -d $'{ "advertiserId": [ADVERTISER_ID] }'
 
