@@ -17,7 +17,10 @@
 SELECT
   r.reported_at AS reported_at,
   r.advertiser_id AS advertiser_id,
+  r.insertion_order_id AS insertion_order_id,
   r.line_item_id AS line_item_id,
+  r.line_item_status AS line_item_status,
+  r.device_type AS device_type,
   r.impressions AS impressions,
   r.billable_impressions AS billable_impressions,
   r.clicks AS clicks,
@@ -29,6 +32,7 @@ SELECT
   r.media_cost_usd AS media_cost_usd,
   s.line_item_type AS line_item_type,
   s.pacing_type AS pacing_type,
+  IF(s.bid_strategy_type = "Fixed", "Fixed", "Autobidding") AS autobidding_overall,
   s.bid_strategy_type AS bid_strategy_type,
   s.budget_type AS budget_type,
   s.is_audience_targeting AS is_audience_targeting,
@@ -46,7 +50,10 @@ FROM (
     MAX(imported_at) AS last_imported_at,
     reported_at,
     advertiser_id,
+    insertion_order_id,
     line_item_id,
+    line_item_status,
+    device_type,
     impressions,
     billable_impressions,
     clicks,
@@ -61,7 +68,10 @@ FROM (
   GROUP BY
     reported_at,
     advertiser_id,
+    insertion_order_id,
     line_item_id,
+    line_item_status,
+    device_type,
     impressions,
     billable_impressions,
     clicks,
@@ -75,6 +85,7 @@ LEFT JOIN (
   SELECT
     MAX(imported_at) AS last_imported_at,
     advertiser_id,
+    insertion_order_id,
     line_item_id,
     line_item_type,
     pacing_type,
@@ -94,6 +105,7 @@ LEFT JOIN (
     `<PROJECT_ID>.dv360_feature_adoption.sdfs`
   GROUP BY
     advertiser_id,
+    insertion_order_id,
     line_item_id,
     line_item_type,
     pacing_type,

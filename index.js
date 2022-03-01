@@ -28,7 +28,7 @@ const wait = (ms) => new Promise((res) => setTimeout(res, ms));
 const DATASET_NAME = 'dv360_feature_adoption';
 const DOUBLECLICKBIDMANAGER_API_VERSION = 'v1.1';
 const DISPLAYVIDEO_API_VERSION = 'v1';
-const SDF_VERSION = 'SDF_VERSION_5_3';
+const SDF_VERSION = 'SDF_VERSION_5_4';
 
 const REQUIRED_API_SCOPES = [
   'https://www.googleapis.com/auth/display-video',
@@ -68,7 +68,13 @@ export async function DisplayVideo360FeatureAdoptionReport(req, res) {
             },
             params: {
               type: 'TYPE_GENERAL',
-              groupBys: ['FILTER_DATE', 'FILTER_LINE_ITEM'],
+              groupBys: [
+                'FILTER_DATE',
+                'FILTER_INSERTION_ORDER',
+                'FILTER_LINE_ITEM',
+                'FILTER_LINE_ITEM_STATUS',
+                'FILTER_DEVICE_TYPE',
+              ],
               filters: [
                 {
                   type: 'FILTER_ADVERTISER',
@@ -118,7 +124,7 @@ export async function DisplayVideo360FeatureAdoptionReport(req, res) {
     const [dataset] = await bq.dataset(DATASET_NAME).get({autoCreate: true});
     const [table] = await dataset.table('reports').get({
       autoCreate: true,
-      schema: `imported_at: date, reported_at: date, advertiser_id: integer, line_item_id: integer, impressions: integer, billable_impressions: string, clicks: integer, click_rate: string, total_conversions: string, last_clicks: string, last_impressions: string, revenue_usd: string, media_cost_usd: string`,
+      schema: `imported_at: date, reported_at: date, advertiser_id: integer, insertion_order_id: integer, line_item_id: integer, line_item_status: string, device_type: string, impressions: integer, billable_impressions: string, clicks: integer, click_rate: string, total_conversions: string, last_clicks: string, last_impressions: string, revenue_usd: string, media_cost_usd: string`,
       location: 'US',
       timePartitioning: {
         type: 'DAY',
@@ -134,7 +140,10 @@ export async function DisplayVideo360FeatureAdoptionReport(req, res) {
           imported_at: new Date().toJSON().slice(0, 10),
           reported_at: data['Date'].replace(/\//g, '-'),
           advertiser_id: advertiserId,
+          insertion_order_id: data['Insertion Order ID'],
           line_item_id: data['Line Item ID'],
+          line_item_status: data['Line Item Status'],
+          device_type: data['Device Type'],
           impressions: data['Impressions'],
           billable_impressions: data['Billable Impressions'],
           clicks: data['Clicks'],
@@ -236,7 +245,7 @@ export async function DisplayVideo360FeatureAdoptionSdf(req, res) {
     const [dataset] = await bq.dataset(DATASET_NAME).get({autoCreate: true});
     const [table] = await dataset.table('sdfs').get({
       autoCreate: true,
-      schema: `line_item_id: integer, line_item_type: string, pacing_type: string, bid_strategy_type: string, budget_type: string, is_audience_targeting: boolean, is_similar_audiences: boolean, is_affinity_inmarket: boolean, is_frequency_enabled: boolean, active_view: string, is_geography_targeting: boolean, is_language_targeting: boolean, digital_content_labels: string, brand_safety_sensitivity_setting: string, is_site_targeting: boolean, imported_at: date, advertiser_id: integer`,
+      schema: `line_item_id: integer, insertion_order_id: integer, line_item_type: string, pacing_type: string, bid_strategy_type: string, budget_type: string, is_audience_targeting: boolean, is_similar_audiences: boolean, is_affinity_inmarket: boolean, is_frequency_enabled: boolean, active_view: string, is_geography_targeting: boolean, is_language_targeting: boolean, digital_content_labels: string, brand_safety_sensitivity_setting: string, is_site_targeting: boolean, imported_at: date, advertiser_id: integer`,
       location: 'US',
       timePartitioning: {
         type: 'DAY',
@@ -253,6 +262,7 @@ export async function DisplayVideo360FeatureAdoptionSdf(req, res) {
         .pipe(parse({headers: true}))
         .transform((data) => ({
           line_item_id: data['Line Item Id'],
+          insertion_order_id: data['Io Id'],
           line_item_type: data['Type'],
           pacing_type: data['Pacing'],
           bid_strategy_type: data['Bid Strategy Type'],

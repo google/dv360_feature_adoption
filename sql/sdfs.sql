@@ -17,6 +17,7 @@
 SELECT
   MAX(imported_at) AS last_imported_at,
   advertiser_id,
+  insertion_order_id,
   line_item_id,
   line_item_type,
   pacing_type,
@@ -36,6 +37,7 @@ FROM
   `<PROJECT_ID>.dv360_feature_adoption.sdfs`
 GROUP BY
   advertiser_id,
+  insertion_order_id,
   line_item_id,
   line_item_type,
   pacing_type,
